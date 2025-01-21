@@ -32,7 +32,7 @@ async function run() {
     app.post("/favorite", async (req, res) => {
       const favMovie = req.body;
       try {
-        // const existingMovie = await favMovieCollection.findOne({ title: favMovie.title });
+        const existingMovie = await favMovieCollection.findOne({ title: favMovie.title });
         if (existingMovie) {
           res.send(existingMovie)
         } else {
