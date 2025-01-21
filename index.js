@@ -31,24 +31,47 @@ async function run() {
     });
     app.post("/favorite", async (req, res) => {
       const favMovie = req.body;
-      const result = await favMovieCollection.insertOne(favMovie);
-      res.send(result)
+      try {
+        const existingMovie = await favMovieCollection.findOne({ title: favMovie.title });
+        if (existingMovie) {
+          res.send(existingMovie)
+        } else {
+          const result = await favMovieCollection.insertOne(favMovie);
+          res.send(result)
+        }
+      } catch {
+        res.status(500).json({ message: "An error occurred while processing your request.", error: error.message });
+      }
+
     });
+
+
     app.get("/favorite", async (req, res) => {
-      const favMovies = favMovieCollection.find();
-      const result = await favMovies.toArray();
+      const email = req.query.email;
+      // console.log(email)
+      const favMovie = favMovieCollection.find({ email: email });
+      const result = await favMovie.toArray();
       res.send(result)
     });
-    app.delete("/favorite/:id", async(req,res)=>{
+    app.delete("/favorite/:id", async (req, res) => {
       const id = req.params.id;
-      const query = {_id: new ObjectId(id)};
+      const query = { _id: new ObjectId(id) };
       const result = await favMovieCollection.deleteOne(query);
       res.send(result)
     })
     app.get("/movies", async (req, res) => {
-      const movies = movieCollection.find();
-      const result = await movies.toArray();
-      res.send(result)
+      const { searchParams } = req.query;
+      // console.log(searchParams)
+      if (searchParams) {
+        const option = { title: { $regex: searchParams, $options: "i" } }
+        const movies = movieCollection.find(option);
+        const result = await movies.toArray();
+        res.send(result)
+      } else {
+        const movies = movieCollection.find();
+        const result = await movies.toArray();
+        res.send(result)
+      }
     });
     app.get("/movies/:id", async (req, res) => {
       const id = req.params.id;
