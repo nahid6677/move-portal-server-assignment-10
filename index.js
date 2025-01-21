@@ -45,6 +45,12 @@ async function run() {
 
     });
 
+    app.get("/homespecial", async (req, res) => {
+      const query = { rating: -1 }
+      const movies = movieCollection.find().sort(query).limit(6);
+      const result = await movies.toArray();
+      res.send(result);
+    })
 
     app.get("/favorite", async (req, res) => {
       const email = req.query.email;
